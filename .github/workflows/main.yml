@@ -1,0 +1,53 @@
+name: Modelops deploy
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  repository_dispatch:
+    types: [ml_ci_cd]
+
+jobs:
+  ml_ci_cd:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: list 
+      run: python --version
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+      
+    - name: download dataset
+      run: wget -O data/PremierLeague100.csv ${{github.event.client_payload.dataseturl}}
+    - name: cat dataset
+      run: cat data/PremierLeague100.csv
+
+    - name: Train model
+      run: cd model && python train.py
+
+    - name: docker build
+      run: docker build -t ${{secrets.DOCKER_USER}}/${{secrets.MODEL_NAME}}:${{github.event.client_payload.sha}} .
+      
+    - name: show images
+      run: docker images
+
+    - name: docker login
+      env:
+        DOCKER_USER: ${{secrets.DOCKER_USER}}
+        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
+      run: |
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
+    - name: docker Push
+      run: docker push ${{secrets.DOCKER_USER}}/${{secrets.MODEL_NAME}}:${{github.event.client_payload.sha }}
