@@ -6,7 +6,8 @@ import pandas as pd
 import numpy as np
 import pathlib
 
-DATA_PATH = pathlib.Path('data/PremierLeague100.csv')
+# Ajuste de ruta: apuntando al CSV en la carpeta raíz
+DATA_PATH = pathlib.Path('../data/PremierLeague100.csv')
 print('Cargando dataset:', DATA_PATH)
 
 df = pd.read_csv(DATA_PATH)
@@ -52,11 +53,11 @@ model = MultiOutputRegressor(base_model)
 model.fit(X_train, y_train)
 
 print('Guardando modelo y artefactos...')
-dump(model, pathlib.Path('model/football-v4.joblib'))
+dump(model, pathlib.Path('football-v4.joblib'))
 dump({
     'feature_cols': feature_cols,
     'target_cols': target_cols,
     'team_classes': teams
-}, pathlib.Path('model/artifacts-v4.joblib'))
+}, pathlib.Path('artifacts-v4.joblib'))
 
 print('Entrenamiento completado. Modelo listo en model/football-v4.joblib')
