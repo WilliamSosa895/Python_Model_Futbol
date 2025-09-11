@@ -1,4 +1,4 @@
-name: Modelops deploy
+name: Premier League Model Deploy
 
 on:
   push:
@@ -28,11 +28,15 @@ jobs:
 
     - name: Install dependencies
       run: pip install -r requirements.txt
+
+    - name: create data directory
+      run: mkdir -p data
       
     - name: download dataset
       run: wget -O data/PremierLeague100.csv ${{github.event.client_payload.dataseturl}}
-    - name: cat dataset
-      run: cat data/PremierLeague100.csv
+      
+    - name: verify dataset
+      run: ls -la data
 
     - name: Train model
       run: cd model && python train.py
@@ -49,5 +53,6 @@ jobs:
         DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD 
+
     - name: docker Push
-      run: docker push ${{secrets.DOCKER_USER}}/${{secrets.MODEL_NAME}}:${{github.event.client_payload.sha }}
+      run: docker push ${{secrets.DOCKER_USER}}/${{secrets.MODEL_NAME}}:${{github.event.client_payload.sha}}
